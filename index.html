@@ -134,86 +134,113 @@ function roundEnd(){if(state!=='roundover'||settings.mode==='online'&&!isHost)re
 function cpuShoot(){if(state!=='aim'||turn!==1||settings.mode!=='cpu')return;let cpuPull=Math.max(30,Math.min(125,76+(Math.random()-.5)*84));let power=-pullShot(0,cpuPull).vy;let vx=(-.055+(Math.random()-.5)*.20)*power; // aim near crown to deflect into scoring side
 shoot(vx,-power,1)}
 function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+
+let boardArtCache=null,boardArtId='';
+function paintArcadeBoard(course,t){
+const b=document.createElement('canvas');b.width=W;b.height=H;const g=b.getContext('2d');
+const rr=(x,y,w,h,r)=>{g.beginPath();g.roundRect(x,y,w,h,r)};
+const strokeLine=(ax,ay,bx,by,width,color)=>{g.beginPath();g.lineCap='round';g.moveTo(ax,ay);g.lineTo(bx,by);g.lineWidth=width;g.strokeStyle=color;g.stroke()};
+const metalBolt=(x,y,r=7)=>{
+ g.save();g.shadowColor='#4b120e';g.shadowBlur=5;g.shadowOffsetY=3;g.fillStyle='#7d2716';g.beginPath();g.arc(x,y,r+2,0,Math.PI*2);g.fill();g.restore();
+ const a=g.createLinearGradient(x-r,y-r,x+r,y+r);a.addColorStop(0,'#fffbc8');a.addColorStop(.25,'#ffd651');a.addColorStop(.65,'#b7780c');a.addColorStop(1,'#fff1a0');
+ g.fillStyle=a;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill();g.strokeStyle='#704315';g.lineWidth=1;g.stroke();
+ strokeLine(x-2,y-1,x+2,y+1,1.6,'#6f451d');strokeLine(x+1,y-2,x-1,y+2,1,'#fff3b1');
+};
+const star=(x,y,r,fill,alpha=1)=>{
+ g.save();g.globalAlpha=alpha;g.fillStyle=fill;g.beginPath();
+ for(let j=0;j<10;j++){const a=-Math.PI/2+j*Math.PI/5,rad=j%2?r*.43:r;g.lineTo(x+Math.cos(a)*rad,y+Math.sin(a)*rad)}
+ g.closePath();g.fill();g.restore()
+};
+// Outside a bright toy table: blue fanburst and illuminated edge.
+const bg=g.createRadialGradient(200,230,10,210,400,535);bg.addColorStop(0,'#14b4ec');bg.addColorStop(.55,'#0866ab');bg.addColorStop(1,'#061a49');
+g.fillStyle=bg;g.fillRect(0,0,W,H);
+g.save();g.translate(210,380);for(let i=0;i<32;i++){let a=i*Math.PI/16;g.beginPath();g.moveTo(0,0);g.arc(0,0,600,a,a+.095);g.closePath();g.fillStyle=i%2?'#ffffff12':'#073e7924';g.fill()}g.restore();
+for(let i=0;i<23;i++)for(let x of [7,413]){let y=24+i*31.8;g.save();g.shadowColor='#ffdf54';g.shadowBlur=13;g.fillStyle='#ffe679';g.beginPath();g.arc(x,y,4.4,0,Math.PI*2);g.fill();g.restore()}
+star(55,120,14,'#55def9',.27);star(365,260,15,'#ffe65e',.2);star(45,585,13,'#fffac9',.16);
+// Heavy red cabinet shell.
+g.save();g.shadowColor='#000b';g.shadowBlur=17;g.shadowOffsetY=7;
+const shell=g.createLinearGradient(8,20,410,744);shell.addColorStop(0,'#ff6861');shell.addColorStop(.17,'#e51d35');shell.addColorStop(.63,'#ab0526');shell.addColorStop(1,'#720927');g.fillStyle=shell;rr(13,18,394,724,25);g.fill();g.restore();
+g.strokeStyle='#ffcc50';g.lineWidth=5;rr(14,20,392,721,24);g.stroke();g.strokeStyle='#ff9982';g.lineWidth=3;rr(21,27,378,707,20);g.stroke();
+g.strokeStyle='#75061b';g.lineWidth=3;rr(25,32,370,697,18);g.stroke();
+// Dark recessed cavity between cabinet and playfield.
+g.save();g.shadowColor='#270519';g.shadowBlur=17;g.shadowOffsetY=7;g.fillStyle='#681720';rr(43,37,334,680,21);g.fill();g.restore();
+// Warm polished real wood playing surface.
+const wood=g.createLinearGradient(34,42,376,714);wood.addColorStop(0,course.theme==='wood'?'#ffd58c':'#fff0b7');wood.addColorStop(.35,course.theme==='wood'?'#f4be69':'#ffe39a');wood.addColorStop(1,course.theme==='wood'?'#cf823a':'#e7b769');
+g.fillStyle=wood;rr(37,40,346,677,14);g.fill();
+g.save();rr(40,42,340,672,12);g.clip();
+for(let j=0;j<44;j++){let x=41+j*8.3;g.beginPath();g.moveTo(x,43);g.bezierCurveTo(x+2+Math.sin(j*2)*5,195,x-7,510,x+Math.cos(j)*5,714);g.strokeStyle=j%3===0?'#a45b1720':'#fff2b930';g.lineWidth=j%4===0?1.7:.8;g.stroke()}
+const topGlow=g.createLinearGradient(0,43,0,240);topGlow.addColorStop(0,'#fff7c075');topGlow.addColorStop(1,'#ffffff00');g.fillStyle=topGlow;g.fillRect(40,43,340,197);
+star(98,290,16,'#b9662f',.15);star(331,323,20,'#c57428',.2);star(351,385,11,'#bd6424',.2);
+g.restore();
+// Red molded edge with multi-stage gold highlight; part of cabinet, no physics effect.
+g.save();g.shadowColor='#651513';g.shadowBlur=11;g.shadowOffsetY=5;
+g.strokeStyle='#a80927';g.lineWidth=16;rr(34,36,352,686,17);g.stroke();g.restore();
+g.strokeStyle='#eb3036';g.lineWidth=10;rr(34,36,352,686,17);g.stroke();
+g.strokeStyle='#ffc641';g.lineWidth=5;rr(37,38,346,681,14);g.stroke();
+g.strokeStyle='#fff3bd';g.lineWidth=1.7;rr(40,42,340,674,11);g.stroke();
+for(let y of [41,721])for(let x of [34,385])metalBolt(x,y,7);
+// Space over V crown is small: small wood inset name, large title belongs in header.
+g.textAlign='center';g.font='1000 17px system-ui';g.lineWidth=3;g.strokeStyle='#ffe6a3';g.strokeText('RICOTTE 500',210,58);g.fillStyle='#992922';g.fillText('RICOTTE 500',210,58);
+// Cabinet guide rail style (paint matches the actual collision lines).
+const rail=(v,kind)=>{
+ const w=v.thick||7;
+ g.save();g.lineCap='round';g.lineJoin='round';g.shadowColor='#561b1c';g.shadowBlur=9;g.shadowOffsetY=5;
+ strokeLine(v.ax,v.ay,v.bx,v.by,w*2+12,kind==='chrome'?'#a72026':kind==='red'?'#8d0822':'#aa4217');g.restore();
+ strokeLine(v.ax,v.ay,v.bx,v.by,w*2+5,kind==='chrome'?'#b1b3c2':kind==='red'?'#e51a36':'#ffae32');
+ strokeLine(v.ax-1,v.ay-1,v.bx-1,v.by-1,w*1.5,kind==='chrome'?'#f7faff':kind==='red'?'#fb5962':'#ffdb63');
+ strokeLine(v.ax-2,v.ay-2,v.bx-2,v.by-2,2,kind==='chrome'?'#ffffff':kind==='red'?'#ffb6bd':'#fff3b1');
+};
+rail(seg(27,125,27,713,6),'red');rail(seg(393,125,393,713,6),'red');
+if(course.divider)rail(seg(divX,290,divX,600,6),'gold');
+// Inset scoring bins: 3D molded-color trays and raised numerals.
+for(const z of course.zones){
+ const hue=z.value===10?['#16b9fa','#0654c0']:z.value===20?['#40dc59','#00823c']:z.value===50?['#ffe54e','#eda21c']:['#ff5e60','#b70635'];
+ g.save();g.shadowColor='#2c111e';g.shadowOffsetY=3;g.shadowBlur=7;
+ const band=g.createLinearGradient(z.x,z.y,z.x,z.y+z.h);band.addColorStop(0,hue[0]);band.addColorStop(.42,hue[0]);band.addColorStop(1,hue[1]);g.fillStyle=band;rr(z.x,z.y,z.w,z.h,5);g.fill();g.restore();
+ g.strokeStyle='#fff5ab';g.lineWidth=2;rr(z.x+1,z.y+1,z.w-2,z.h-2,5);g.stroke();
+ g.fillStyle='#ffffff6e';rr(z.x+5,z.y+4,z.w-10,Math.min(9,z.h/6),3);g.fill();
+ g.fillStyle='#fff1b1';g.fillRect(z.x+6,z.y+z.h-5,z.w-12,2);
+ g.font='1000 33px system-ui';g.textAlign='center';g.lineJoin='round';g.lineWidth=5;g.strokeStyle='#752120';g.strokeText(String(z.value),z.x+z.w/2,z.y+z.h/2+11);g.fillStyle='#fffbe6';g.fillText(String(z.value),z.x+z.w/2,z.y+z.h/2+11);
+}
+for(let q of course.pockets){
+ g.save();g.shadowBlur=11;g.shadowColor='#f6cb58';g.fillStyle='#191929';g.beginPath();g.arc(q.x,q.y,q.r,0,Math.PI*2);g.fill();g.strokeStyle='#ffe57e';g.lineWidth=4;g.stroke();g.restore();g.fillStyle='#fff9c4';g.font='bold 13px system-ui';g.textAlign='center';g.fillText(q.value,q.x,q.y+5);
+}
+// Bumper endcaps and chrome V-shaped cushions.
+for(const v of course.rails){
+ const isMain=(v.ay<260&&v.by<260),kind=isMain?'chrome':'red';
+ rail(v,kind);for(let p of [[v.ax,v.ay],[v.bx,v.by]])metalBolt(p[0],p[1],7);
+}
+// Static circular bumpers on left return: glowing molded rubber.
+for(const o of course.orbs){
+ g.save();g.shadowBlur=13;g.shadowColor='#cf203d';g.shadowOffsetY=5;g.fillStyle='#831a29';g.beginPath();g.arc(o.x,o.y,o.r+6,0,2*Math.PI);g.fill();g.restore();
+ const fill=g.createRadialGradient(o.x-o.r*.35,o.y-o.r*.45,1,o.x,o.y,o.r+2);
+ fill.addColorStop(0,'#fff3d5');fill.addColorStop(.23,'#ff7772');fill.addColorStop(.66,'#ec1f3c');fill.addColorStop(1,'#821333');g.fillStyle=fill;g.beginPath();g.arc(o.x,o.y,o.r,0,2*Math.PI);g.fill();g.strokeStyle='#fff09c';g.lineWidth=3;g.stroke();
+}
+// The start target and signage.
+g.save();g.shadowColor='#721321';g.shadowBlur=9;g.shadowOffsetY=3;g.fillStyle='#881d2a';g.beginPath();g.arc(course.start.x,course.start.y,23,0,2*Math.PI);g.fill();g.restore();
+g.fillStyle='#ffdb69';g.beginPath();g.arc(course.start.x,course.start.y,19,0,2*Math.PI);g.fill();
+g.fillStyle='#402039';g.beginPath();g.arc(course.start.x,course.start.y,15,0,2*Math.PI);g.fill();
+g.textAlign='center';g.font='1000 12px system-ui';g.fillStyle='#aa2222';g.fillText('LAUNCH',course.start.x,course.start.y+45);
+strokeLine(course.start.x,course.start.y+53,course.start.x,course.start.y+67,2.5,'#a92d23');
+strokeLine(course.start.x-6,course.start.y+61,course.start.x,course.start.y+67,2.5,'#a92d23');
+strokeLine(course.start.x+6,course.start.y+61,course.start.x,course.start.y+67,2.5,'#a92d23');
+g.font='1000 12px system-ui';g.fillText('PULL BACK',course.start.x,course.start.y+81);
+return b;
+}
 function draw(){
 const w=C.clientWidth,h=C.clientHeight;
 ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(offsX,offsY);ctx.scale(scale,scale);
 const course=layouts[layout],t=palettes[course.theme],start=course.start;
-// Arcade cabinet face: blue sunburst, pin lights and painted stars.
-const backdrop=ctx.createRadialGradient(210,275,20,210,360,530);
-backdrop.addColorStop(0,'#168bc6');backdrop.addColorStop(.65,'#08528b');backdrop.addColorStop(1,'#061b44');
-ctx.fillStyle=backdrop;ctx.fillRect(0,0,W,H);
-ctx.save();ctx.translate(210,360);
-for(let n=0;n<24;n++){const a=n*Math.PI/12;ctx.fillStyle=n%2?'#28b9ef19':'#ffffff0a';ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,610,a,a+.115);ctx.closePath();ctx.fill()}
-ctx.restore();
-for(let n=0;n<23;n++){const yy=34+n*31.6,rad=n%3===0?4.6:3.2;for(let xx of [8,412]){ctx.save();ctx.shadowBlur=10;ctx.shadowColor='#ffe660';ctx.fillStyle='#ffda45';ctx.beginPath();ctx.arc(xx,yy,rad,0,Math.PI*2);ctx.fill();ctx.restore()}}
-
-const outer=ctx.createLinearGradient(0,20,420,740);outer.addColorStop(0,'#ff7564');outer.addColorStop(.23,'#ec2530');outer.addColorStop(.69,'#b40b22');outer.addColorStop(1,'#6b1036');
-ctx.fillStyle=outer;ctx.shadowColor='#ffce57';ctx.shadowBlur=20;roundRect(12,22,396,722,21);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#ffdc69';ctx.lineWidth=5;roundRect(13,23,394,720,20);ctx.stroke();ctx.strokeStyle='#ff997c';ctx.lineWidth=3;roundRect(21,31,378,704,16);ctx.stroke();
-ctx.strokeStyle='#7d1225';ctx.lineWidth=3;roundRect(18,28,384,714,20);ctx.stroke();
-
-// Deep inlaid toy-board well with cast shadow around the lip.
-ctx.save();ctx.shadowColor='#361017';ctx.shadowBlur=13;ctx.shadowOffsetY=5;
-ctx.fillStyle='#5c1e20';roundRect(29,39,362,680,20);ctx.fill();ctx.restore();
-const felt=ctx.createLinearGradient(0,35,0,738);felt.addColorStop(0,course.theme==='classic'?'#fff1ac':t[0]);felt.addColorStop(.52,course.theme==='classic'?'#ffdc7b':t[0]);felt.addColorStop(1,course.theme==='classic'?'#eeb75e':t[1]);ctx.fillStyle=felt;roundRect(25,35,370,692,15);ctx.fill();
-ctx.strokeStyle='#a8540f';ctx.lineWidth=12;roundRect(24,35,372,692,15);ctx.stroke();ctx.strokeStyle='#ffd95d';ctx.lineWidth=5;roundRect(25,37,370,688,13);ctx.stroke();
-ctx.strokeStyle='#fff7c3';ctx.lineWidth=2;roundRect(30,42,360,680,12);ctx.stroke();
-ctx.strokeStyle=t[4]+'88';ctx.lineWidth=2;roundRect(32,43,356,676,11);ctx.stroke();ctx.strokeStyle='#ffffff24';ctx.lineWidth=1;roundRect(39,49,342,664,9);ctx.stroke();for(let x of [24,396])for(let y of [37,725]){ctx.fillStyle=t[2];ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f6e5b5';ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6f543a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-2,y);ctx.lineTo(x+2,y);ctx.stroke()}
-ctx.save();ctx.beginPath();ctx.rect(34,44,352,673);ctx.clip();
-for(let y=54;y<715;y+=23){ctx.strokeStyle=course.theme==='pool'?'#ffffff08':'#b3682010';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(33,y);ctx.lineTo(387,y);ctx.stroke()}
-if(course.theme==='classic'||course.theme==='wood'){
- for(let i=0;i<20;i++){const x=44+(i*79)%336;ctx.strokeStyle=i%2?'#fff8c611':'#9c4a1910';ctx.lineWidth=1+(i%3)/2;ctx.beginPath();ctx.moveTo(x,52);ctx.bezierCurveTo(x+7,180,x-10,520,x+3,712);ctx.stroke()}
- // Decorative inset stars. Non-colliding: never mistaken for bonus targets.
- const star=(x,y,rad,alpha)=>{ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#c75a16';ctx.beginPath();for(let q=0;q<10;q++){let angle=-Math.PI/2+q*Math.PI/5,rr=q%2?rad*.45:rad;ctx.lineTo(x+Math.cos(angle)*rr,y+Math.sin(angle)*rr)}ctx.closePath();ctx.fill();ctx.restore()};
- star(305,337,19,.20);star(353,380,11,.22);star(84,266,12,.15);
-}
-
-if(course.theme==='pool'){
- for(let y=105;y<630;y+=54){for(let x of [38,382]){ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle='#fbe4ad';ctx.fillRect(-3.5,-3.5,7,7);ctx.restore()}}
-}else if(course.theme==='neon'){
- for(let i=0;i<20;i++){ctx.fillStyle=i%2?'#f955d71a':'#52f2f71a';ctx.beginPath();ctx.arc(60+(i*97)%300,98+(i*149)%575,2+(i%4),0,Math.PI*2);ctx.fill()}
-}else if(course.theme==='steel'){
- for(let i=0;i<16;i++){ctx.strokeStyle='#fff3';ctx.beginPath();ctx.moveTo(40,90+i*39);ctx.lineTo(380,90+i*39);ctx.stroke()}
-}
-ctx.restore();
-ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='1000 20px system-ui';ctx.shadowColor='#fff2b2';ctx.shadowBlur=4;ctx.fillStyle='#9b211b';ctx.fillText('RICOTTE 500',210,61);ctx.shadowBlur=0;ctx.font='900 10px system-ui';ctx.fillStyle='#9b3b1d';ctx.fillText('★  '+course.name+'  ★',210,77);
-const drawRail=(rail,outerRail=false)=>{
-ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=outerRail?'#ffe489':'#b40820';ctx.shadowBlur=outerRail?3:9;
-ctx.strokeStyle=outerRail?'#b32a20':'#961b22';ctx.lineWidth=(rail.thick||7)*2+11;
-ctx.beginPath();ctx.moveTo(rail.ax,rail.ay);ctx.lineTo(rail.bx,rail.by);ctx.stroke();
-ctx.strokeStyle=outerRail?'#ffca36':'#f8f7f7';ctx.lineWidth=(rail.thick||7)*1.45;ctx.beginPath();ctx.moveTo(rail.ax,rail.ay);ctx.lineTo(rail.bx,rail.by);ctx.stroke();
-ctx.strokeStyle=outerRail?'#fff4ba':'#ffffff';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(rail.ax-1,rail.ay-2);ctx.lineTo(rail.bx-1,rail.by-2);ctx.stroke();
-ctx.shadowBlur=0;
-};
-drawRail(seg(27,120,27,714,6),true);drawRail(seg(393,120,393,714,6),true);
-if(course.divider)drawRail(seg(divX,290,divX,600,6),true);
-for(let z of course.zones){
- ctx.shadowColor=z.color;ctx.shadowBlur=13;const band=ctx.createLinearGradient(z.x,z.y,z.x,z.y+z.h);band.addColorStop(0,z.value===10?'#37cfff':z.value===20?'#5ce86d':z.value===50?'#ffe66a':'#ff5755');band.addColorStop(1,z.value===10?'#0676cd':z.value===20?'#04813b':z.value===50?'#ef9c16':'#c11235');ctx.fillStyle=band;roundRect(z.x,z.y,z.w,z.h,7);ctx.fill();ctx.strokeStyle='#fff5bb';ctx.lineWidth=2;roundRect(z.x+1,z.y+1,z.w-2,z.h-2,7);ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle='#ffffff44';roundRect(z.x+5,z.y+4,z.w-10,Math.min(9,z.h/5),4);ctx.fill();ctx.font='1000 '+(z.w<86?21:29)+'px system-ui';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#50171e';ctx.strokeText(z.value,z.x+z.w/2,z.y+z.h/2+10);ctx.fillStyle='#fff9d7';ctx.fillText(z.value,z.x+z.w/2,z.y+z.h/2+10);
-}
-for(let pocket of course.pockets){
- ctx.shadowColor=t[4];ctx.shadowBlur=14;ctx.fillStyle='#0b1324';ctx.beginPath();ctx.arc(pocket.x,pocket.y,pocket.r,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle=t[4];ctx.lineWidth=5;ctx.stroke();ctx.shadowBlur=0;
- ctx.font='900 13px system-ui';ctx.fillStyle='#fff7da';ctx.fillText(pocket.value,pocket.x,pocket.y+5);
-}
-for(let rail of course.rails){
- drawRail(rail);
- for(let pt of [[rail.ax,rail.ay],[rail.bx,rail.by]]){ctx.fillStyle='#a43c12';ctx.beginPath();ctx.arc(pt[0],pt[1],8.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffd85b';ctx.beginPath();ctx.arc(pt[0],pt[1],6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff6c1';ctx.beginPath();ctx.arc(pt[0]-1.5,pt[1]-1.7,2,0,Math.PI*2);ctx.fill()}
-}
-for(let orb of course.orbs){
- ctx.shadowColor=t[4];ctx.shadowBlur=15;const rg=ctx.createRadialGradient(orb.x-5,orb.y-7,3,orb.x,orb.y,orb.r+6);
- rg.addColorStop(0,'#ffffff');rg.addColorStop(.25,t[4]);rg.addColorStop(.75,t[2]);rg.addColorStop(1,'#12172b');
- ctx.fillStyle=rg;ctx.beginPath();ctx.arc(orb.x,orb.y,orb.r,0,Math.PI*2);ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#fff9e6';ctx.stroke();ctx.shadowBlur=0;
- ctx.strokeStyle='#ffffff88';ctx.lineWidth=1;ctx.beginPath();ctx.arc(orb.x,orb.y,orb.r*.63,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ffffffb8';ctx.beginPath();ctx.arc(orb.x-4,orb.y-5,3,0,Math.PI*2);ctx.fill();
-}
+if(!boardArtCache||boardArtId!==layout){boardArtCache=paintArcadeBoard(course,t);boardArtId=layout}
+ctx.drawImage(boardArtCache,0,0);
+// Dynamic bonus star appears on top of static wood and cushions.
 if(bonusTarget&&!bonusTarget.hit){
- const b=bonusTarget,pulse=.85+.15*Math.sin(performance.now()/165);
- ctx.save();ctx.translate(b.x,b.y);ctx.scale(pulse,pulse);ctx.shadowColor='#fff474';ctx.shadowBlur=27;ctx.fillStyle=b.value===50?'#ffe24c':'#f8efff';ctx.strokeStyle='#e52774';ctx.lineWidth=3;
- ctx.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,rad=k%2?7:16;ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}ctx.closePath();ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.font='950 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#172438';ctx.fillText('+'+b.value,0,4);ctx.restore();
+const b=bonusTarget,scaleStar=1+.11*Math.sin(performance.now()/120);
+ctx.save();ctx.translate(b.x,b.y);ctx.scale(scaleStar,scaleStar);ctx.shadowColor='#fff66b';ctx.shadowBlur=22;
+ctx.fillStyle='#f9dd39';ctx.strokeStyle='#da2444';ctx.lineWidth=3;ctx.beginPath();
+for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?7:16;ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}
+ctx.closePath();ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#60231a';ctx.fillText('+'+b.value,0,4);ctx.restore();
 }
-ctx.textAlign='center';ctx.font='1000 12px system-ui';ctx.lineWidth=2.5;ctx.strokeStyle='#821c1b';ctx.strokeText('LAUNCH',start.x,start.y+42);ctx.fillStyle='#fff0a0';ctx.fillText('LAUNCH',start.x,start.y+42);
-ctx.fillStyle='#8c2433';ctx.beginPath();ctx.arc(start.x,start.y,23,0,Math.PI*2);ctx.fill();
-ctx.fillStyle='#f8c862';ctx.beginPath();ctx.arc(start.x,start.y,19,0,Math.PI*2);ctx.fill();
-ctx.fillStyle='#411d32';ctx.beginPath();ctx.arc(start.x,start.y,16,0,Math.PI*2);ctx.fill();
-ctx.strokeStyle=t[4];ctx.lineWidth=2;ctx.setLineDash([5,7]);ctx.beginPath();ctx.arc(start.x,start.y,25,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
 // Slingshot stretch and aiming feedback.
 let puckDrawX=start.x,puckDrawY=start.y;
 if(state==='aim'&&!(settings.mode==='cpu'&&turn===1)&&!(settings.mode==='online'&&(!onlineReady||turn!==(isHost?0:1)))){
