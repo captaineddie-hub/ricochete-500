@@ -169,7 +169,7 @@ function applySnapshot(v){if(!v||!Array.isArray(v.scores)||!Array.isArray(v.puck
 let roomTimeout=0,roomEpoch=0;
 function stopRoomTimer(){clearTimeout(roomTimeout);roomTimeout=0}
 function roomMessage(title,detail,canRetry=true){
- stopRoomTimer();connecting=false;onlineReady=false;
+ roomEpoch++;stopRoomTimer();connecting=false;onlineReady=false;
  try{connection?.close();peer?.destroy()}catch(e){}
  connection=null;peer=null;
  modal('<h1>'+title+'</h1><p>'+detail+'</p>'+(canRetry?'<button class="btn primary" id="retryRoom">TRY AGAIN</button>':'')+'<button class="btn" id="roomBack">BACK TO ONLINE MENU</button>');
