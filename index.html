@@ -44,6 +44,30 @@ body{background:radial-gradient(ellipse at 50% -12%,#0fa9d4 0%,#094a92 35%,#0a21
 .coursePreview{border:2px solid #ffcb54;background:#073d71;color:#ffe078}
 .footer{color:#e8d298}
 @media(max-width:390px){.shell{gap:4px}.player{min-height:68px;padding:5px 8px}.top{padding:4px 6px}.hud{min-height:52px}}
+
+/* Artwork pass: illustrated marquee and recessed score cabinet. */
+.top{position:relative;min-height:76px;background:radial-gradient(ellipse at 45% 0%,#15baf1,#0759a5 60%,#09294d);border:0;border-radius:18px 18px 8px 8px;box-shadow:inset 0 3px 0 #ffffff44,0 4px 0 #cc1731,0 6px 9px #0009;overflow:visible;padding:8px 8px 8px 7px}
+.top::before,.top::after{position:absolute;top:12px;content:"★";color:#ffe246;font-size:clamp(16px,4vw,25px);text-shadow:1px 2px 0 #941d20,0 0 9px #ffe56f99;pointer-events:none}.top::before{left:1px}.top::after{right:6px;top:54px;font-size:14px}
+.top>div:first-child{min-width:0;text-align:center;flex:1}
+.top .brand{font-size:clamp(27px,7vw,43px);line-height:1.06;white-space:nowrap;letter-spacing:-.045em;color:#fff9db;-webkit-text-stroke:1.4px #ac1426;text-shadow:0 1px 0 #ffffff,1px 3px 0 #dc3141,2px 5px 0 #790b1e,3px 7px 0 #440b20,0 0 12px #ffe89177}
+.top .brand span{color:#ffe149;-webkit-text-stroke:1px #a72a11;text-shadow:0 2px 0 #fff2a1,2px 4px 0 #c23113,2px 6px 0 #761a11}
+.top .tiny{display:inline-block;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;letter-spacing:.08em;margin-top:5px;padding:4px 12px 3px;color:#fff8bd;background:linear-gradient(180deg,#10acae,#036270);border:2px solid #ffd34f;border-radius:999px;box-shadow:inset 0 2px #d5ffff77,0 3px 0 #a52b14;text-shadow:0 1px #005263}
+.top #menuBtn{font-size:12px;flex:0 0 auto;padding:8px 10px;min-width:70px;box-shadow:inset 0 2px #bdeeff,0 3px 0 #05335f}
+.scorebar{margin-top:4px;gap:6px}
+.player{position:relative;overflow:hidden;min-height:74px;padding:8px 10px 5px;border-radius:18px;box-shadow:inset 0 3px #ffffff88,inset 0 -5px #0005,0 3px 0 #901a24,0 6px 10px #0008}
+.player::before{content:"";pointer-events:none;position:absolute;top:6px;left:8px;right:8px;height:25%;border-radius:100% 100% 15% 15%;background:linear-gradient(180deg,#ffffff50,#ffffff00)}
+.player::after{content:"";position:absolute;bottom:9px;width:29px;height:29px;border-radius:50%;border:2px solid #ffe8aa;box-shadow:inset -4px -5px 6px #0007,inset 4px 4px 5px #ffffffac,0 3px 0 #3e1631,0 0 9px #ffffff40}
+.player.red::after{left:11px;background:radial-gradient(circle at 33% 25%,#fff6ef 0%,#ff8580 22%,#ed2229 50%,#820b24 100%)}
+.player.blue::after{right:11px;background:radial-gradient(circle at 33% 25%,#f3ffff 0%,#78d9ff 22%,#258cff 50%,#07328c 100%)}
+.player.red .points{text-align:right;padding-right:4px}.player.blue .points{text-align:left;padding-left:4px}
+.player .points{font-size:clamp(32px,8vw,45px);color:#fffdf8;line-height:1;text-shadow:1px 2px #17335e,2px 4px #1b153a}
+.player .name{font-size:clamp(11px,3.2vw,16px);position:relative;z-index:1;color:#ffffff}
+.center{min-width:90px;padding:9px 3px 6px;color:#7b180e;background:linear-gradient(180deg,#fff6ac,#ffd341 57%,#f0a91c);border:2px solid #fff2a2;border-radius:16px;box-shadow:inset 0 3px #fffdf0,0 4px 0 #9a2915,0 6px 10px #0008;text-shadow:0 1px 0 #fff8af;font-size:clamp(11px,3vw,16px)}
+.center small{color:#8d2615;font-weight:1000}
+.meterTitle{background:linear-gradient(#fb273a,#8b112a);border:2px solid #ffca45;border-radius:10px;padding:5px 3px;color:#fff9be;box-shadow:inset 0 2px #ff8c84,0 3px #620c1c}
+.meterValue{background:linear-gradient(#d32135,#740c27);border:2px solid #ffd34c;border-radius:11px;padding:5px 3px;min-width:38px;text-align:center;box-shadow:inset 0 2px #fa7771,0 3px #540b27}
+.footer{font-size:9px;color:#ffdda0}
+@media(max-width:390px){.top{min-height:71px}.top .brand{font-size:clamp(24px,6.6vw,32px)}.center{min-width:78px}.player::after{width:24px;height:24px}.player.red .points{padding-right:0}.player.blue .points{padding-left:0}.top .tiny{font-size:8px;padding:3px 6px}.top #menuBtn{min-width:62px;padding:7px 6px}}
 </style></head><body><main class="shell"><header class="top"><div><div class="brand">RICOTTE <span>500</span></div><div class="tiny" id="brandMode">CLASSIC ARCADE · ARCADE</div></div><button class="btn" id="menuBtn" aria-label="Menu">☰ Menu</button></header><section class="scorebar"><div id="redCard" class="player red"><div class="name">RED</div><div class="points" id="redScore">0</div></div><div class="center"><div id="roundLabel">ROUND 1</div><small id="turnLabel">SHOT 1 / 8</small></div><div id="blueCard" class="player blue"><div class="name" id="blueName">CPU</div><div class="points" id="blueScore">0</div></div></section><section class="arena" id="arena"><canvas id="game" aria-label="Ricochet game board, pull puck back to shoot"></canvas><aside class="sideMeter" id="sideMeter" aria-label="Shot strength indicator"><div class="meterTitle">POWER</div><div class="meterTrack"><div class="meterFill" id="meterFill"></div></div><div class="meterValue" id="meterValue">0%</div></aside><div id="toast" class="toast"></div><div class="modal" id="modal"><div class="panel" id="panel"></div></div></section><div class="hud"><div class="hint" id="hint">Pull the puck backward like a slingshot<small>Release to shoot • aim with your pull</small></div><div class="chips" id="chips"></div></div><div class="bottom"><button class="btn" id="rulesBtn">How to Play</button><button class="btn" id="soundBtn">♪ Sound On</button><button class="btn primary" id="restartBtn">New Game</button></div><div class="footer">An original multi-board arcade skill game. Seven different tables.</div></main><script>
 (()=>{'use strict';const C=document.getElementById('game'),ctx=C.getContext('2d'),arena=document.getElementById('arena');const $=id=>document.getElementById(id);let W=420,H=760,scale=1,offsX=0,offsY=0,last=0,acc=0;const R=11;const topY=84,divX=210,divTop=290,divBot=600,boardL=26,boardR=394,boardB=722;const seg=(ax,ay,bx,by,thick=7,bounce=.83)=>({ax,ay,bx,by,thick,bounce});
 const orb=(x,y,r=16,bounce=.92)=>({x,y,r,bounce});
