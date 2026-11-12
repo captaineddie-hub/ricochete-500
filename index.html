@@ -68,6 +68,23 @@ body{background:radial-gradient(ellipse at 50% -12%,#0fa9d4 0%,#094a92 35%,#0a21
 .meterValue{background:linear-gradient(#d32135,#740c27);border:2px solid #ffd34c;border-radius:11px;padding:5px 3px;min-width:38px;text-align:center;box-shadow:inset 0 2px #fa7771,0 3px #540b27}
 .footer{font-size:9px;color:#ffdda0}
 @media(max-width:390px){.top{min-height:71px}.top .brand{font-size:clamp(24px,6.6vw,32px)}.center{min-width:78px}.player::after{width:24px;height:24px}.player.red .points{padding-right:0}.player.blue .points{padding-left:0}.top .tiny{font-size:8px;padding:3px 6px}.top #menuBtn{min-width:62px;padding:7px 6px}}
+
+/* Final-pass molded toy detailing, sized to stay usable on a phone. */
+.top{background:radial-gradient(ellipse at 50% 0%,#159fe2 0%,#0873be 45%,#092f65 100%);border:3px solid #f7cb4d;border-bottom:4px solid #d81b2f;box-shadow:inset 0 2px 0 #c0faff8a,0 4px 0 #8a142b,0 7px 12px #0009}
+.top .brand{filter:drop-shadow(0 3px 0 #650a22)}
+.top .tiny{letter-spacing:.07em}
+.center{position:relative;isolation:isolate}
+.center::before{content:"★";position:absolute;z-index:0;top:-15px;left:calc(50% - 10px);font-size:20px;color:#ffdc34;-webkit-text-stroke:1px #c04717;text-shadow:0 2px #9a2715}
+.center>div,.center>small{position:relative;z-index:1}
+.meterTrack{position:relative;background:linear-gradient(to top,#12a9ee 0 14%,#1bed95 15% 29%,#bcff3e 30% 43%,#ffe441 44% 59%,#ff9c20 60% 73%,#fa3339 74% 100%);border:3px solid #f9da68;box-shadow:0 0 0 3px #a31832,inset 0 0 8px #000c,0 0 12px #ffba37}
+.meterTrack::before{background:repeating-linear-gradient(to top,transparent 0 12%,#350b23cc 12.1% 14.3%);z-index:3;pointer-events:none}
+.meterTrack::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#ffffff99,#ffffff03 36%,#0004 95%);z-index:2;pointer-events:none}
+.meterFill{background:linear-gradient(to top,#16baff 0%,#22faac 25%,#f4ff47 55%,#ffc131 76%,#f42646 100%);box-shadow:0 0 10px #fffbb9;filter:brightness(1.13)}
+.sideMeter{box-shadow:inset 3px 0 #fff4b74d,0 0 12px #ffbd4a22}
+.bottom .btn{font-size:clamp(10px,2.9vw,14px);white-space:nowrap;min-width:0}
+.bottom .primary{font-size:clamp(11px,3.1vw,15px);font-weight:1000}
+.hud .hint{letter-spacing:-.015em}
+@media(max-width:370px){.center{min-width:74px;font-size:11px}.player .points{font-size:32px}.player{padding-left:7px;padding-right:7px}.top{min-height:68px}.meterTitle{font-size:8px}.bottom{gap:5px}.bottom .btn{padding:8px 5px}}
 </style></head><body><main class="shell"><header class="top"><div><div class="brand">RICOTTE <span>500</span></div><div class="tiny" id="brandMode">CLASSIC ARCADE · ARCADE</div></div><button class="btn" id="menuBtn" aria-label="Menu">☰ Menu</button></header><section class="scorebar"><div id="redCard" class="player red"><div class="name">RED</div><div class="points" id="redScore">0</div></div><div class="center"><div id="roundLabel">ROUND 1</div><small id="turnLabel">SHOT 1 / 8</small></div><div id="blueCard" class="player blue"><div class="name" id="blueName">CPU</div><div class="points" id="blueScore">0</div></div></section><section class="arena" id="arena"><canvas id="game" aria-label="Ricochet game board, pull puck back to shoot"></canvas><aside class="sideMeter" id="sideMeter" aria-label="Shot strength indicator"><div class="meterTitle">POWER</div><div class="meterTrack"><div class="meterFill" id="meterFill"></div></div><div class="meterValue" id="meterValue">0%</div></aside><div id="toast" class="toast"></div><div class="modal" id="modal"><div class="panel" id="panel"></div></div></section><div class="hud"><div class="hint" id="hint">Pull the puck backward like a slingshot<small>Release to shoot • aim with your pull</small></div><div class="chips" id="chips"></div></div><div class="bottom"><button class="btn" id="rulesBtn">How to Play</button><button class="btn" id="soundBtn">♪ Sound On</button><button class="btn primary" id="restartBtn">New Game</button></div><div class="footer">An original multi-board arcade skill game. Seven different tables.</div></main><script>
 (()=>{'use strict';const C=document.getElementById('game'),ctx=C.getContext('2d'),arena=document.getElementById('arena');const $=id=>document.getElementById(id);let W=420,H=760,scale=1,offsX=0,offsY=0,last=0,acc=0;const R=11;const topY=84,divX=210,divTop=290,divBot=600,boardL=26,boardR=394,boardB=722;const seg=(ax,ay,bx,by,thick=7,bounce=.83)=>({ax,ay,bx,by,thick,bounce});
 const orb=(x,y,r=16,bounce=.92)=>({x,y,r,bounce});
@@ -222,6 +239,12 @@ for(const z of course.zones){
  g.save();g.shadowColor='#2c111e';g.shadowOffsetY=3;g.shadowBlur=7;
  const band=g.createLinearGradient(z.x,z.y,z.x,z.y+z.h);band.addColorStop(0,hue[0]);band.addColorStop(.42,hue[0]);band.addColorStop(1,hue[1]);g.fillStyle=band;rr(z.x,z.y,z.w,z.h,5);g.fill();g.restore();
  g.strokeStyle='#fff5ab';g.lineWidth=2;rr(z.x+1,z.y+1,z.w-2,z.h-2,5);g.stroke();
+ // Glossy inset trim and tiny chevron lane lamps; no collision geometry.
+ g.save();g.shadowColor=hue[0];g.shadowBlur=9;
+ for(let edge of [-1,1]){
+  const lx=edge<0?z.x-5:z.x+z.w+5;
+  g.fillStyle='#fff49b';g.beginPath();g.moveTo(lx,z.y+z.h/2-7);g.lineTo(lx+edge*3,z.y+z.h/2);g.lineTo(lx,z.y+z.h/2+7);g.lineTo(lx-edge*3,z.y+z.h/2);g.closePath();g.fill();
+ }g.restore();
  g.fillStyle='#ffffff6e';rr(z.x+5,z.y+4,z.w-10,Math.min(9,z.h/6),3);g.fill();
  g.fillStyle='#fff1b1';g.fillRect(z.x+6,z.y+z.h-5,z.w-12,2);
  g.font='1000 33px system-ui';g.textAlign='center';g.lineJoin='round';g.lineWidth=5;g.strokeStyle='#752120';g.strokeText(String(z.value),z.x+z.w/2,z.y+z.h/2+11);g.fillStyle='#fffbe6';g.fillText(String(z.value),z.x+z.w/2,z.y+z.h/2+11);
@@ -244,11 +267,18 @@ for(const o of course.orbs){
 g.save();g.shadowColor='#721321';g.shadowBlur=9;g.shadowOffsetY=3;g.fillStyle='#881d2a';g.beginPath();g.arc(course.start.x,course.start.y,23,0,2*Math.PI);g.fill();g.restore();
 g.fillStyle='#ffdb69';g.beginPath();g.arc(course.start.x,course.start.y,19,0,2*Math.PI);g.fill();
 g.fillStyle='#402039';g.beginPath();g.arc(course.start.x,course.start.y,15,0,2*Math.PI);g.fill();
-g.textAlign='center';g.font='1000 12px system-ui';g.fillStyle='#aa2222';g.fillText('LAUNCH',course.start.x,course.start.y+45);
+// Raised golden launch plaque, rendered behind lettering.
+g.save();g.shadowColor='#6b1b1e';g.shadowBlur=8;g.shadowOffsetY=3;g.fillStyle='#b42429';rr(course.start.x-44,course.start.y+26,88,24,8);g.fill();g.restore();
+const plaque=g.createLinearGradient(0,course.start.y+27,0,course.start.y+48);plaque.addColorStop(0,'#fff0a5');plaque.addColorStop(.5,'#ffd04b');plaque.addColorStop(1,'#ce7d12');g.fillStyle=plaque;rr(course.start.x-41,course.start.y+29,82,18,6);g.fill();
+g.strokeStyle='#fff9c5';g.lineWidth=1;rr(course.start.x-40,course.start.y+30,80,16,6);g.stroke();
+g.textAlign='center';g.font='1000 12px system-ui';g.fillStyle='#85251b';g.fillText('LAUNCH',course.start.x,course.start.y+43);
 strokeLine(course.start.x,course.start.y+53,course.start.x,course.start.y+67,2.5,'#a92d23');
 strokeLine(course.start.x-6,course.start.y+61,course.start.x,course.start.y+67,2.5,'#a92d23');
 strokeLine(course.start.x+6,course.start.y+61,course.start.x,course.start.y+67,2.5,'#a92d23');
-g.font='1000 12px system-ui';g.fillText('PULL BACK',course.start.x,course.start.y+81);
+g.font='1000 12px system-ui';g.fillStyle='#9d1a22';g.fillText('PULL BACK',course.start.x,course.start.y+81);
+for(let x of [course.start.x-52,course.start.x+52]){
+ g.strokeStyle='#f9da63';g.lineWidth=2;strokeLine(x,course.start.y+36,x+(x<course.start.x?-9:9),course.start.y+36,2,'#eebb3d');
+}
 return b;
 }
 function draw(){
@@ -261,6 +291,12 @@ ctx.drawImage(boardArtCache,0,0);
 if(bonusTarget&&!bonusTarget.hit){
 const b=bonusTarget,scaleStar=1+.11*Math.sin(performance.now()/120);
 ctx.save();ctx.translate(b.x,b.y);ctx.scale(scaleStar,scaleStar);ctx.shadowColor='#fff66b';ctx.shadowBlur=22;
+// Small starburst prize sign with radiating sparks, entirely decorative.
+ctx.strokeStyle='#ffed6b';ctx.lineWidth=2;ctx.beginPath();
+for(let k=0;k<12;k++){const a=k*Math.PI/6;ctx.moveTo(Math.cos(a)*21,Math.sin(a)*21);ctx.lineTo(Math.cos(a)*28,Math.sin(a)*28)}
+ctx.stroke();
+ctx.fillStyle='#821f68';ctx.strokeStyle='#ffd75a';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-23,17,46,17,6);ctx.fill();ctx.stroke();
+ctx.fillStyle='#fff3a7';ctx.textAlign='center';ctx.font='1000 9px system-ui';ctx.fillText('BONUS',0,29);
 ctx.fillStyle='#f9dd39';ctx.strokeStyle='#da2444';ctx.lineWidth=3;ctx.beginPath();
 for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?7:16;ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}
 ctx.closePath();ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#60231a';ctx.fillText('+'+b.value,0,4);ctx.restore();
