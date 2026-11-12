@@ -138,14 +138,35 @@ function draw(){
 const w=C.clientWidth,h=C.clientHeight;
 ctx.clearRect(0,0,w,h);ctx.save();ctx.translate(offsX,offsY);ctx.scale(scale,scale);
 const course=layouts[layout],t=palettes[course.theme],start=course.start;
-ctx.fillStyle='#071320';ctx.fillRect(0,0,W,H);
+// Arcade cabinet face: blue sunburst, pin lights and painted stars.
+const backdrop=ctx.createRadialGradient(210,275,20,210,360,530);
+backdrop.addColorStop(0,'#168bc6');backdrop.addColorStop(.65,'#08528b');backdrop.addColorStop(1,'#061b44');
+ctx.fillStyle=backdrop;ctx.fillRect(0,0,W,H);
+ctx.save();ctx.translate(210,360);
+for(let n=0;n<24;n++){const a=n*Math.PI/12;ctx.fillStyle=n%2?'#28b9ef19':'#ffffff0a';ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,610,a,a+.115);ctx.closePath();ctx.fill()}
+ctx.restore();
+for(let n=0;n<23;n++){const yy=34+n*31.6,rad=n%3===0?4.6:3.2;for(let xx of [8,412]){ctx.save();ctx.shadowBlur=10;ctx.shadowColor='#ffe660';ctx.fillStyle='#ffda45';ctx.beginPath();ctx.arc(xx,yy,rad,0,Math.PI*2);ctx.fill();ctx.restore()}}
+
 const outer=ctx.createLinearGradient(0,20,420,740);outer.addColorStop(0,'#ff7564');outer.addColorStop(.23,'#ec2530');outer.addColorStop(.69,'#b40b22');outer.addColorStop(1,'#6b1036');
 ctx.fillStyle=outer;ctx.shadowColor='#ffce57';ctx.shadowBlur=20;roundRect(12,22,396,722,21);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#ffdc69';ctx.lineWidth=5;roundRect(13,23,394,720,20);ctx.stroke();ctx.strokeStyle='#ff997c';ctx.lineWidth=3;roundRect(21,31,378,704,16);ctx.stroke();
+ctx.strokeStyle='#7d1225';ctx.lineWidth=3;roundRect(18,28,384,714,20);ctx.stroke();
+
+// Deep inlaid toy-board well with cast shadow around the lip.
+ctx.save();ctx.shadowColor='#361017';ctx.shadowBlur=13;ctx.shadowOffsetY=5;
+ctx.fillStyle='#5c1e20';roundRect(29,39,362,680,20);ctx.fill();ctx.restore();
 const felt=ctx.createLinearGradient(0,35,0,738);felt.addColorStop(0,course.theme==='classic'?'#fff1ac':t[0]);felt.addColorStop(.52,course.theme==='classic'?'#ffdc7b':t[0]);felt.addColorStop(1,course.theme==='classic'?'#eeb75e':t[1]);ctx.fillStyle=felt;roundRect(25,35,370,692,15);ctx.fill();
 ctx.strokeStyle='#a8540f';ctx.lineWidth=12;roundRect(24,35,372,692,15);ctx.stroke();ctx.strokeStyle='#ffd95d';ctx.lineWidth=5;roundRect(25,37,370,688,13);ctx.stroke();
+ctx.strokeStyle='#fff7c3';ctx.lineWidth=2;roundRect(30,42,360,680,12);ctx.stroke();
 ctx.strokeStyle=t[4]+'88';ctx.lineWidth=2;roundRect(32,43,356,676,11);ctx.stroke();ctx.strokeStyle='#ffffff24';ctx.lineWidth=1;roundRect(39,49,342,664,9);ctx.stroke();for(let x of [24,396])for(let y of [37,725]){ctx.fillStyle=t[2];ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f6e5b5';ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6f543a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-2,y);ctx.lineTo(x+2,y);ctx.stroke()}
 ctx.save();ctx.beginPath();ctx.rect(34,44,352,673);ctx.clip();
-for(let y=54;y<715;y+=23){ctx.strokeStyle=course.theme==='pool'?'#ffffff08':'#ffffff10';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(33,y);ctx.lineTo(387,y);ctx.stroke()}
+for(let y=54;y<715;y+=23){ctx.strokeStyle=course.theme==='pool'?'#ffffff08':'#b3682010';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(33,y);ctx.lineTo(387,y);ctx.stroke()}
+if(course.theme==='classic'||course.theme==='wood'){
+ for(let i=0;i<20;i++){const x=44+(i*79)%336;ctx.strokeStyle=i%2?'#fff8c611':'#9c4a1910';ctx.lineWidth=1+(i%3)/2;ctx.beginPath();ctx.moveTo(x,52);ctx.bezierCurveTo(x+7,180,x-10,520,x+3,712);ctx.stroke()}
+ // Decorative inset stars. Non-colliding: never mistaken for bonus targets.
+ const star=(x,y,rad,alpha)=>{ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#c75a16';ctx.beginPath();for(let q=0;q<10;q++){let angle=-Math.PI/2+q*Math.PI/5,rr=q%2?rad*.45:rad;ctx.lineTo(x+Math.cos(angle)*rr,y+Math.sin(angle)*rr)}ctx.closePath();ctx.fill();ctx.restore()};
+ star(305,337,19,.20);star(353,380,11,.22);star(84,266,12,.15);
+}
+
 if(course.theme==='pool'){
  for(let y=105;y<630;y+=54){for(let x of [38,382]){ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.fillStyle='#fbe4ad';ctx.fillRect(-3.5,-3.5,7,7);ctx.restore()}}
 }else if(course.theme==='neon'){
@@ -154,12 +175,13 @@ if(course.theme==='pool'){
  for(let i=0;i<16;i++){ctx.strokeStyle='#fff3';ctx.beginPath();ctx.moveTo(40,90+i*39);ctx.lineTo(380,90+i*39);ctx.stroke()}
 }
 ctx.restore();
-ctx.shadowBlur=0;ctx.textAlign='center';ctx.fillStyle='#a11f16';ctx.font='1000 19px system-ui';ctx.shadowColor='#fff2b2';ctx.shadowBlur=4;ctx.fillText('RICOTTE 500',210,61);ctx.shadowBlur=0;ctx.font='900 10px system-ui';ctx.fillStyle='#a54a1c';ctx.fillText('★  '+course.name+'  ★',210,76);
+ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='1000 20px system-ui';ctx.shadowColor='#fff2b2';ctx.shadowBlur=4;ctx.fillStyle='#9b211b';ctx.fillText('RICOTTE 500',210,61);ctx.shadowBlur=0;ctx.font='900 10px system-ui';ctx.fillStyle='#9b3b1d';ctx.fillText('★  '+course.name+'  ★',210,77);
 const drawRail=(rail,outerRail=false)=>{
 ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=outerRail?'#ffe489':'#b40820';ctx.shadowBlur=outerRail?3:9;
-ctx.strokeStyle=outerRail?'#a85a10':'#b0191d';ctx.lineWidth=(rail.thick||7)*2+8;
+ctx.strokeStyle=outerRail?'#b32a20':'#961b22';ctx.lineWidth=(rail.thick||7)*2+11;
 ctx.beginPath();ctx.moveTo(rail.ax,rail.ay);ctx.lineTo(rail.bx,rail.by);ctx.stroke();
-ctx.strokeStyle=outerRail?'#ffe064':'#fff5d9';ctx.lineWidth=(rail.thick||7)*1.12;ctx.beginPath();ctx.moveTo(rail.ax,rail.ay);ctx.lineTo(rail.bx,rail.by);ctx.stroke();
+ctx.strokeStyle=outerRail?'#ffca36':'#f8f7f7';ctx.lineWidth=(rail.thick||7)*1.45;ctx.beginPath();ctx.moveTo(rail.ax,rail.ay);ctx.lineTo(rail.bx,rail.by);ctx.stroke();
+ctx.strokeStyle=outerRail?'#fff4ba':'#ffffff';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(rail.ax-1,rail.ay-2);ctx.lineTo(rail.bx-1,rail.by-2);ctx.stroke();
 ctx.shadowBlur=0;
 };
 drawRail(seg(27,120,27,714,6),true);drawRail(seg(393,120,393,714,6),true);
@@ -174,7 +196,7 @@ for(let pocket of course.pockets){
 }
 for(let rail of course.rails){
  drawRail(rail);
- for(let pt of [[rail.ax,rail.ay],[rail.bx,rail.by]]){ctx.fillStyle=t[2];ctx.beginPath();ctx.arc(pt[0],pt[1],6.5,0,Math.PI*2);ctx.fill();ctx.fillStyle=t[4];ctx.beginPath();ctx.arc(pt[0],pt[1],2.7,0,Math.PI*2);ctx.fill()}
+ for(let pt of [[rail.ax,rail.ay],[rail.bx,rail.by]]){ctx.fillStyle='#a43c12';ctx.beginPath();ctx.arc(pt[0],pt[1],8.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffd85b';ctx.beginPath();ctx.arc(pt[0],pt[1],6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff6c1';ctx.beginPath();ctx.arc(pt[0]-1.5,pt[1]-1.7,2,0,Math.PI*2);ctx.fill()}
 }
 for(let orb of course.orbs){
  ctx.shadowColor=t[4];ctx.shadowBlur=15;const rg=ctx.createRadialGradient(orb.x-5,orb.y-7,3,orb.x,orb.y,orb.r+6);
@@ -187,8 +209,10 @@ if(bonusTarget&&!bonusTarget.hit){
  ctx.save();ctx.translate(b.x,b.y);ctx.scale(pulse,pulse);ctx.shadowColor='#fff474';ctx.shadowBlur=27;ctx.fillStyle=b.value===50?'#ffe24c':'#f8efff';ctx.strokeStyle='#e52774';ctx.lineWidth=3;
  ctx.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,rad=k%2?7:16;ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad)}ctx.closePath();ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.font='950 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#172438';ctx.fillText('+'+b.value,0,4);ctx.restore();
 }
-ctx.textAlign='center';ctx.font='900 11px system-ui';ctx.fillStyle=t[3];ctx.fillText('LAUNCH',start.x,start.y+42);
-ctx.fillStyle='#13213888';ctx.beginPath();ctx.arc(start.x,start.y,23,0,Math.PI*2);ctx.fill();
+ctx.textAlign='center';ctx.font='1000 12px system-ui';ctx.lineWidth=2.5;ctx.strokeStyle='#821c1b';ctx.strokeText('LAUNCH',start.x,start.y+42);ctx.fillStyle='#fff0a0';ctx.fillText('LAUNCH',start.x,start.y+42);
+ctx.fillStyle='#8c2433';ctx.beginPath();ctx.arc(start.x,start.y,23,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#f8c862';ctx.beginPath();ctx.arc(start.x,start.y,19,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#411d32';ctx.beginPath();ctx.arc(start.x,start.y,16,0,Math.PI*2);ctx.fill();
 ctx.strokeStyle=t[4];ctx.lineWidth=2;ctx.setLineDash([5,7]);ctx.beginPath();ctx.arc(start.x,start.y,25,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
 // Slingshot stretch and aiming feedback.
 let puckDrawX=start.x,puckDrawY=start.y;
