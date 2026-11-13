@@ -1,0 +1,74 @@
+name: Build itch.io HTML5 release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '.github/workflows/itch-release.yml'
+permissions:
+  contents: read
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout game
+        uses: actions/checkout@v4
+      - name: Validate HTML5 game JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          assert len(scripts)==1, 'Expected one self-contained script'
+          Path('/tmp/ricotte-check.js').write_text(scripts[0],encoding='utf-8')
+          assert 'function startOnline(' in s and 'function levelSelect()' in s
+          PY
+          node --check /tmp/ricotte-check.js
+      - name: Bundle release with local PeerJS copy
+        run: |
+          set -euo pipefail
+          mkdir -p dist/ricotte500
+          cp index.html dist/ricotte500/index.html
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 3 --silent --show-error \
+            'https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js' \
+            -o dist/ricotte500/peerjs.min.js
+          test "$(wc -c < dist/ricotte500/peerjs.min.js)" -gt 10000
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('dist/ricotte500/index.html')
+          s=p.read_text(encoding='utf-8')
+          src='https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js'
+          assert src in s, 'PeerJS CDN reference not found; update build script'
+          p.write_text(s.replace(src,'./peerjs.min.js'),encoding='utf-8')
+          PY
+          node --check dist/ricotte500/peerjs.min.js
+          cat > dist/ricotte500/README.txt <<'EOF'
+          RICOTTE 500 — itch.io HTML5 browser game
+          Upload the ZIP file, select Kind of Game: HTML, and choose "This file will be played in the browser".
+          Online multiplayer requires internet and PeerJS signaling/WebRTC; offline single player is available.
+          Browser-playable build, voluntary donations. No mandatory purchase.
+          EOF
+          cd dist/ricotte500
+          sha256sum index.html peerjs.min.js > SHA256SUMS.txt
+          zip -9 -X ../Ricotte-500-itch-HTML5.zip index.html peerjs.min.js README.txt SHA256SUMS.txt
+      - name: Verify ZIP entrypoint and integrity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          p=Path('dist/Ricotte-500-itch-HTML5.zip')
+          with ZipFile(p) as z:
+            assert 'index.html' in z.namelist()
+            assert 'peerjs.min.js' in z.namelist()
+            assert all(not x.startswith('/') and '..' not in x.split('/') for x in z.namelist())
+          print('PASS:',p.stat().st_size,'bytes')
+          PY
+      - name: Publish downloadable itch.io game build
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ricotte-500-itch-HTML5
+          path: dist/Ricotte-500-itch-HTML5.zip
+          if-no-files-found: error
+          retention-days: 90
