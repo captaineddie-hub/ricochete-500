@@ -1,21 +1,23 @@
 # Ricochet 500
 
-A mobile-friendly finger-flick arcade game inspired by classic tabletop bank-shot games. Original game art and branding.
+A colorful, mobile-friendly arcade bank-shot game from Captain Eddie Games.
 
 ## Play
 
-Open `index.html` in a modern browser. On a phone, touch the puck near the bottom-right, drag upward to aim and set power, and release to shoot. Bounce off the angled cushions into the scoring lane. Four shots per player, eight per round; first to 500 wins.
+Play online at https://captaineddie-hub.github.io/ricochete-500/ or upload the HTML5 release ZIP to itch.io.
 
-**Modes:** solo vs CPU or local two-player pass-and-play.
+Pull the puck **back**, adjust your angle, and release to bank off the V-shaped rebound cushions into the scoring lane. Each player shoots four pucks per round; first to 500 wins.
 
-## itch.io publishing
+**Modes:** four single-player challenge boards against the CPU, pass-and-play on one device, and private-room online multiplayer. Bonus stars occasionally appear in the left scoring lane.
 
-Create an HTML game on itch.io and upload a ZIP containing `index.html` at the ZIP root. Enable **This file will be played in the browser** and **Mobile Friendly**. Keep the page in portrait orientation for best results.
+## itch.io
 
-## GitHub Pages
+GitHub Actions builds the playable ZIP automatically via **Build itch.io HTML5 release**. Download the most recent `Ricochet-500-itch-HTML5` artifact, extract the wrapper ZIP if necessary, and upload the inner `Ricochet-500-itch-HTML5.zip` to itch.io as a browser-playable HTML game. Set pricing to **free with optional donations** (suggested contribution $2.99).
 
-In repository **Settings → Pages**, set **Deploy from a branch**, branch **main**, folder **/(root)**, then save. Pages hosting can require a public repository or an eligible GitHub plan for private repositories.
+The bundled PeerJS script is local to the release; peer signaling and WebRTC still require connectivity. Multiplayer rooms are intended for casual friendly games and are not server-authoritative.
 
-## Notes
+## Project notes
 
-No external libraries or images are required. This is an early playable build; test puck physics, collisions, and scoring on your device before public release.
+The GitHub repository retains the historical spelling `ricochete-500` in its URL to avoid breaking existing links. The **displayed game title is Ricochet 500**.
+
+Level-progress storage migrates from the old `ricotte500levels` key on existing devices. 
