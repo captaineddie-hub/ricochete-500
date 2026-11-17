@@ -85,6 +85,40 @@ body{background:radial-gradient(ellipse at 50% -12%,#0fa9d4 0%,#094a92 35%,#0a21
 .bottom .primary{font-size:clamp(11px,3.1vw,15px);font-weight:1000}
 .hud .hint{letter-spacing:-.015em}
 @media(max-width:370px){.center{min-width:74px;font-size:11px}.player .points{font-size:32px}.player{padding-left:7px;padding-right:7px}.top{min-height:68px}.meterTitle{font-size:8px}.bottom{gap:5px}.bottom .btn{padding:8px 5px}}
+
+/* Android portrait + itch.io mobile fullscreen sizing. Preserve original game world. */
+html,body{width:100%;height:100%;min-height:0}
+.shell{width:min(100%,620px);height:var(--app-height,100dvh);max-height:var(--app-height,100dvh);min-height:0;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+.arena{min-height:0;flex:1 1 auto}
+.arena canvas{min-height:0;min-width:0}
+@media (orientation:portrait) and (max-width:600px){
+ .shell{gap:3px;padding-left:5px;padding-right:5px}
+ .top{min-height:0;padding:5px 6px}
+ .top .brand{font-size:clamp(22px,6.5vw,32px);line-height:1}
+ .top .tiny{font-size:8px;margin-top:2px}
+ .scorebar{margin-top:0;gap:4px;padding:2px 0}
+ .player{min-height:54px;padding:5px 7px;border-radius:12px}
+ .player .points{font-size:clamp(25px,7vw,36px)}
+ .player .name{font-size:11px}
+ .player::after{width:20px;height:20px;bottom:6px}
+ .center{min-width:65px;font-size:clamp(10px,2.8vw,13px);padding:6px 3px 3px}
+ .center small{font-size:9px}
+ .hud{min-height:38px;padding:5px 7px;gap:5px}
+ .hint{font-size:11px}
+ .hint small{font-size:9px;margin-top:1px}
+ .bottom{gap:4px}
+ .bottom .btn{padding:7px 3px;font-size:clamp(9px,2.6vw,12px)}
+ .footer{font-size:8px;line-height:1.1}
+ .meterTrack{height:min(26vh,190px)}
+}
+@media (max-height:630px){
+ .top .tiny,.footer{display:none}
+ .shell{gap:2px}
+ .top{min-height:0;padding:3px 5px}
+ .player{min-height:42px;padding:3px 6px}
+ .hud{min-height:30px;padding:3px 6px}
+ .bottom .btn{padding:4px 3px}
+}
 </style></head><body><main class="shell"><header class="top"><div><div class="brand">RICOCHET <span>500</span></div><div class="tiny" id="brandMode">CLASSIC ARCADE</div></div><button class="btn" id="menuBtn" aria-label="Menu">☰ Menu</button></header><section class="scorebar"><div id="redCard" class="player red"><div class="name">RED</div><div class="points" id="redScore">0</div></div><div class="center"><div id="roundLabel">ROUND 1</div><small id="turnLabel">SHOT 1 / 8</small></div><div id="blueCard" class="player blue"><div class="name" id="blueName">CPU</div><div class="points" id="blueScore">0</div></div></section><section class="arena" id="arena"><canvas id="game" aria-label="Ricochet game board, pull puck back to shoot"></canvas><aside class="sideMeter" id="sideMeter" aria-label="Shot strength indicator"><div class="meterTitle">POWER</div><div class="meterTrack"><div class="meterFill" id="meterFill"></div></div><div class="meterValue" id="meterValue">0%</div></aside><div id="toast" class="toast"></div><div class="modal" id="modal"><div class="panel" id="panel"></div></div></section><div class="hud"><div class="hint" id="hint">Pull the puck backward like a slingshot<small>Release to shoot • aim with your pull</small></div><div class="chips" id="chips"></div></div><div class="bottom"><button class="btn" id="rulesBtn">How to Play</button><button class="btn" id="soundBtn">♪ Sound On</button><button class="btn primary" id="restartBtn">New Game</button></div><div class="footer">An original arcade rebound game. Four single-player levels.</div></main><script>
 (()=>{'use strict';const C=document.getElementById('game'),ctx=C.getContext('2d'),arena=document.getElementById('arena');const $=id=>document.getElementById(id);let W=420,H=760,scale=1,offsX=0,offsY=0,last=0,acc=0;const R=11;const topY=84,divX=210,divTop=290,divBot=600,boardL=26,boardR=394,boardB=722;const seg=(ax,ay,bx,by,thick=7,bounce=.83)=>({ax,ay,bx,by,thick,bounce});
 const orb=(x,y,r=16,bounce=.92)=>({x,y,r,bounce});
@@ -106,7 +140,20 @@ const palettes={classic:['#ffe994','#e8bf5d','#936730','#44321d','#edc86e'],wood
 let layout='classic',bumpers=layouts[layout].rails;
 let settings={sound:true,mode:'cpu'};let peer=null,connection=null,roomCode='',isHost=false,onlineReady=false,connecting=false;let state='menu',pucks=[],scores=[0,0],turn=0,shot=0,round=1,drag=null,queued=false,settle=0,shotAge=0,modalPrev='aim',toastTimeout=0,aiTimer=0,best=Number(localStorage.getItem('ricochet500best')||0);const soloLevels=['classic','bend','posts','rails'];let levelProgress={};try{levelProgress=JSON.parse((localStorage.getItem('ricochet500levels')||localStorage.getItem('ricotte500levels'))||'{}')||{}}catch(e){}let audio=null;let bonusTarget=null,bonusBank=[0,0],bonusFlash=0;
 function beep(freq=300,vol=.06,dur=.07){if(!settings.sound)return;try{audio??=new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();let o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=freq;g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur)}catch(e){}}
-function resize(){const r=C.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);C.width=Math.round(r.width*dpr);C.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);scale=Math.min(r.width/W,r.height/H);offsX=(r.width-W*scale)/2;offsY=(r.height-H*scale)/2;draw()}const ro=new ResizeObserver(resize);ro.observe(arena);
+function resize(){const r=C.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);C.width=Math.round(r.width*dpr);C.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);scale=Math.min(r.width/W,r.height/H);offsX=(r.width-W*scale)/2;offsY=(r.height-H*scale)/2;draw()}function sizeMobileViewport(){
+ // Android browsers and itch.io fullscreen can report different CSS and visual heights.
+ const root=document.documentElement,view=window.visualViewport;
+ const h=Math.max(280,Math.min(window.innerHeight||root.clientHeight||760,view?.height||Infinity));
+ root.style.setProperty('--app-height',h+'px');
+ resize();
+}
+const ro=new ResizeObserver(resize);ro.observe(arena);
+window.addEventListener('resize',sizeMobileViewport,{passive:true});
+window.addEventListener('orientationchange',sizeMobileViewport,{passive:true});
+window.visualViewport?.addEventListener('resize',sizeMobileViewport,{passive:true});
+document.addEventListener('fullscreenchange',sizeMobileViewport);
+sizeMobileViewport();
+
 function start(mode=settings.mode){bonusBank=[0,0];bonusTarget=null;bonusFlash=0;if(mode!=='online'&&peer){try{connection?.close();peer.destroy()}catch(e){}peer=null;connection=null;onlineReady=false;roomCode=''}settings.mode=mode;scores=[0,0];turn=0;shot=0;round=1;pucks=[];drag=null;queued=false;setPowerMeter();state='aim';spawnBonus();$('modal').classList.add('hidden');$('blueName').textContent=mode==='cpu'?'CPU':mode==='online'?'ONLINE':'BLUE';updateUI();beep(420);}
 function updateUI(){$('brandMode').textContent=layouts[layout].name;$('redScore').textContent=scores[0];$('blueScore').textContent=scores[1];$('roundLabel').textContent=`ROUND ${round}`;$('turnLabel').textContent=`SHOT ${Math.min(shot+1,8)} / 8`;$('redCard').classList.toggle('active',turn===0);$('blueCard').classList.toggle('active',turn===1);$('hint').innerHTML=state==='rolling'?'Pucks in motion…<small>Watch for bumps and knockouts!</small>':state==='roundover'?'Round complete<small>Tap to continue</small>':turn===1&&settings.mode==='cpu'?'CPU choosing its bank shot…<small>Try a gentle bank or a clean bypass</small>':'Pull BACK and release!<small>Watch the side power meter • angle the pull to aim</small>';if(settings.mode==='online'){$('hint').innerHTML=(!onlineReady?'Waiting for player…':turn===(isHost?0:1)?'YOUR TURN — PULL BACK TO SHOOT':'OPPONENT TURN — WATCH THE PUCK')+'<small>'+layouts[layout].name+' · Room '+roomCode+'</small>'}if(state==='aim'&&bonusTarget){$('hint').innerHTML+=' <small>✨ '+bonusTarget.value+' BONUS TARGET — hit the glowing star!</small>'}let chips='';for(let i=0;i<4;i++)chips+=`<span class="chip ${i<Math.ceil(shot/2)?'r':''}"></span>`;chips+='<span style="width:7px"></span>';for(let i=0;i<4;i++)chips+=`<span class="chip ${i<Math.floor(shot/2)?'b':''}"></span>`;$('chips').innerHTML=chips;}
 function showToast(t){let e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>e.classList.remove('show'),1500)}
